@@ -9,6 +9,7 @@ public interface IProductService
     List<ProductDto> GetProductList();
     ProductDto GetProduct(Guid Id);
     void AddNewProduct(AddNewProductDto addNewProduct);
+    bool UpdateProductName(UpdateProductDto updateProduct);
 }
 
 public class RProductService : IProductService
@@ -18,6 +19,19 @@ public class RProductService : IProductService
     public RProductService(ProductDatabaseContext context)
     {
         this.context = context;
+    }
+
+    public bool UpdateProductName(UpdateProductDto updateProduct)
+    {
+        var product = context.Products.Find(updateProduct.ProductId);
+        if (product is not null)
+        {
+            product.Name = updateProduct.Name;
+            context.SaveChanges();
+            return true;
+        }
+        else
+            return false;
     }
 
     public void AddNewProduct(AddNewProductDto addNewProduct)
@@ -80,6 +94,8 @@ public class RProductService : IProductService
         return data;
     }
 }
+
+public record UpdateProductDto(Guid ProductId, string Name);
 
 public class ProductDto
 {
