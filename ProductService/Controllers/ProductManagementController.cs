@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using ProductService.MessagingBus.Messages;
 using ProductService.Model.Services;
+using SayyehBanTools.MessagingBus.RabbitMQ.Model;
+using SayyehBanTools.MessagingBus.RabbitMQ.SendMessage;
 
 namespace ProductService.Controllers;
 
@@ -8,10 +12,13 @@ namespace ProductService.Controllers;
 public class ProductManagementController : ControllerBase
 {
     private readonly IProductService productService;
-
-    public ProductManagementController(IProductService productService)
+    private readonly ISendMessages messageBus;
+    private readonly string exchangeName;
+    public ProductManagementController(IProductService productService, IOptions<RabbitMqConnectionSettings> rabbitMqOptions, ISendMessages messageBus)
     {
         this.productService = productService;
+        this.messageBus = messageBus;
+        exchangeName = rabbitMqOptions.Value.queue;
     }
 
     [HttpPost]
@@ -40,7 +47,19 @@ public class ProductManagementController : ControllerBase
     [HttpPut]
     public IActionResult Put(UpdateProductDto updateProduct)
     {
-        return Ok(productService.UpdateProductName(updateProduct));
+        var result = productService.UpdateProductName(updateProduct);
+        if (result)
+        {
+            UpdateProductNameMessage updateProductNameMessage = new UpdateProductNameMessage
+            {
+                Creationtime = DateTime.UtcNow,
+                Id = updateProduct.ProductId,
+                NewName = updateProduct.Name,
+                MessageId = Guid.NewGuid()
+            };
+            messageBus.SendMessage(updateProductNameMessage, exchangeName, null);
+        }
+        return Ok(result);
     }
 
 }
