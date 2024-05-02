@@ -17,8 +17,8 @@ public class CategoryController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-      var data=categoryService.GetCategories();
-    return Ok(data);
+        var data = categoryService.GetCategories();
+        return Ok(data);
     }
     // POST api/<CategoryController>
     [HttpPost]
