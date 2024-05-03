@@ -11,18 +11,21 @@ namespace ProductService.Controllers;
 public class ProductManagementController : ControllerBase
 {
     private readonly IProductService productService;
-    private readonly ISendMessages messageBus;
-    public ProductManagementController(IProductService productService, ISendMessages messageBus)
+
+    public ProductManagementController(IProductService productService)
     {
         this.productService = productService;
-        this.messageBus = messageBus;
+    }
+    public ProductManagementController()
+    {
+
     }
 
     [HttpPost]
     public IActionResult Post([FromBody] AddNewProductDto addNewProductDto)
     {
-        productService.AddNewProduct(addNewProductDto);
-        return Ok();
+        var productId = productService.AddNewProduct(addNewProductDto);
+        return Created($"/api/ProductManagement/get/{productId}", productId);
     }
 
 
@@ -42,7 +45,7 @@ public class ProductManagementController : ControllerBase
     }
 
     [HttpPut]
-    public IActionResult Put(UpdateProductDto updateProduct)
+    public IActionResult Put(UpdateProductDto updateProduct, ISendMessages sendMessages)
     {
         var result = productService.UpdateProductName(updateProduct);
         if (result)
@@ -54,7 +57,7 @@ public class ProductManagementController : ControllerBase
                 NewName = updateProduct.Name,
                 MessageId = Guid.NewGuid()
             };
-            messageBus.SendMessage(updateProductNameMessage, LinkRabbitMQ.UpdateProductName, null);
+            sendMessages.SendMessage(updateProductNameMessage, LinkRabbitMQ.UpdateProductName, null);
         }
         return Ok(result);
     }

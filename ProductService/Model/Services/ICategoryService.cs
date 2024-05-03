@@ -6,7 +6,7 @@ namespace ProductService.Model.Services;
 public interface ICategoryService
 {
     List<CategoryDto> GetCategories();
-    void AddNewCatrgory(CategoryDto category);
+    Guid AddNewCatrgory(CategoryDto category);
 }
 public class RCategoryService : ICategoryService
 {
@@ -17,7 +17,7 @@ public class RCategoryService : ICategoryService
         this.context = context;
     }
 
-    public void AddNewCatrgory(CategoryDto category)
+    public Guid AddNewCatrgory(CategoryDto category)
     {
         Category newCategory = new Category
         {
@@ -26,6 +26,7 @@ public class RCategoryService : ICategoryService
         };
         context.Categories.Add(newCategory);
         context.SaveChanges();
+        return newCategory.Id;
     }
 
     public List<CategoryDto> GetCategories()

@@ -8,7 +8,7 @@ public interface IProductService
 {
     List<ProductDto> GetProductList();
     ProductDto GetProduct(Guid Id);
-    void AddNewProduct(AddNewProductDto addNewProduct);
+    Guid AddNewProduct(AddNewProductDto addNewProduct);
     bool UpdateProductName(UpdateProductDto updateProduct);
 }
 
@@ -34,7 +34,7 @@ public class RProductService : IProductService
             return false;
     }
 
-    public void AddNewProduct(AddNewProductDto addNewProduct)
+    public Guid AddNewProduct(AddNewProductDto addNewProduct)
     {
         var category = context.Categories.Find(addNewProduct.CategoryId);
         if (category == null)
@@ -49,6 +49,7 @@ public class RProductService : IProductService
         };
         context.Products.Add(product);
         context.SaveChanges();
+        return product.Id;
     }
 
     public ProductDto GetProduct(Guid Id)
