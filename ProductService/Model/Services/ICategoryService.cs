@@ -7,6 +7,7 @@ public interface ICategoryService
 {
     List<CategoryDto> GetCategories();
     Guid AddNewCatrgory(CategoryDto category);
+    CategoryDto Getcategory(Guid categoryId);
 }
 public class RCategoryService : ICategoryService
 {
@@ -40,6 +41,17 @@ public class RCategoryService : ICategoryService
                Id = p.Id
            }).ToList();
         return data;
+    }
+
+    public CategoryDto Getcategory(Guid categoryId)
+    {
+        var category = context.Categories.Find(categoryId);
+        return new CategoryDto
+        {
+            Description = category.Description,
+            Name = category.Name,
+            Id = category.Id
+        };
     }
 }
 public class CategoryDto
