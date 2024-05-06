@@ -27,4 +27,20 @@ public class ProductController : ControllerBase
         var data = productService.GetProduct(id);
         return Ok(data);
     }
+    [HttpGet("/api/product/verify/{Id}")]
+    public IActionResult Verify(Guid Id)
+    {
+        var data = productService.GetProduct(Id);
+        return Ok(new ProductVeryfyDto
+        {
+            ProductId = data.Id,
+            ProductName = data.Name
+        });
+
+    }
+}
+public class ProductVeryfyDto
+{
+    public Guid ProductId { get; set; }
+    public string ProductName { get; set; }
 }
