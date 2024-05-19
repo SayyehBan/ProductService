@@ -10,21 +10,18 @@ namespace ProductService.Controllers;
 [ApiController]
 public class ProductManagementController : ControllerBase
 {
-    private readonly IProductService productService;
+    private readonly IProductService _productService;
 
     public ProductManagementController(IProductService productService)
     {
-        this.productService = productService;
+        _productService = productService;
     }
-    public ProductManagementController()
-    {
 
-    }
 
     [HttpPost]
     public IActionResult Post([FromBody] AddNewProductDto addNewProductDto)
     {
-        var productId = productService.AddNewProduct(addNewProductDto);
+        var productId = _productService.AddNewProduct(addNewProductDto);
         return Created($"/api/ProductManagement/get/{productId}", productId);
     }
 
@@ -32,7 +29,7 @@ public class ProductManagementController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        var products = productService.GetProductList();
+        var products = _productService.GetProductList();
         return Ok(products);
     }
 
@@ -40,14 +37,14 @@ public class ProductManagementController : ControllerBase
     [HttpGet("Id")]
     public IActionResult Get(Guid Id)
     {
-        var product = productService.GetProduct(Id);
+        var product = _productService.GetProduct(Id);
         return Ok(product);
     }
 
     [HttpPut]
     public IActionResult Put(UpdateProductDto updateProduct, ISendMessages sendMessages)
     {
-        var result = productService.UpdateProductName(updateProduct);
+        var result = _productService.UpdateProductName(updateProduct);
         if (result)
         {
             UpdateProductNameMessage updateProductNameMessage = new UpdateProductNameMessage
