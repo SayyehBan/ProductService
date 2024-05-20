@@ -9,7 +9,7 @@ namespace ProductService.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize(Policy = "ProductAdmin")]
+[Authorize(Policy = "ProductAdmin")]
 public class ProductManagementController : ControllerBase
 {
     private readonly IProductService _productService;
