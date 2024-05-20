@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProductService.MessagingBus.Messages;
 using ProductService.Model.Links;
 using ProductService.Model.Services;
@@ -8,6 +9,7 @@ namespace ProductService.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+//[Authorize(Policy = "ProductAdmin")]
 public class ProductManagementController : ControllerBase
 {
     private readonly IProductService _productService;

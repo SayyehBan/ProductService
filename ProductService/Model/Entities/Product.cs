@@ -11,9 +11,9 @@ public class Product
     public Category Category { get; set; }
     public void UpdatePrice(int NewPrice)
     {
-        if (NewPrice==0)
+        if (NewPrice == 0)
         {
-            throw new Exception("");
+            throw new Exception("Price can nut zero..");
         }
         this.Price = NewPrice;
     }

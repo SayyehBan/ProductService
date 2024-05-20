@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using ProductService.Infrastructure.Contexts;
+using ProductService.Model.Links;
 using ProductService.Model.Services;
 using SayyehBanTools.ConfigureService;
 using SayyehBanTools.ConnectionDB;
@@ -16,6 +19,19 @@ builder.Services.AddTransient<IProductService, RProductService>();
 //RabbitMQ
 builder.Services.Configure<RabbitMqConnectionSettings>(builder.Configuration
     .GetSection("RabbitMq"));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(option =>
+            {
+                option.Authority =LinkServices.IdentityServer;
+                option.Audience = "productservice";
+            });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ProductAdmin",
+        policy => policy.RequireClaim("scope", "productservice.admin"));
+});
 //builder.Services.AddScoped<IMessageBus, RabbitMQMessageBus>();
 //پیکربندی های پیش فرض SayyehbanTools
 var configureServices = new ConfigureServicesRabbitMQ();
@@ -34,7 +50,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();

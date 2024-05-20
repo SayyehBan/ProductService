@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProductService.Model.Services;
 
 namespace ProductService.Controllers;
@@ -21,6 +22,7 @@ public class CategoryController : ControllerBase
         return Ok(data);
     }
     // POST api/<CategoryController>
+    [Authorize(Policy = "ProductAdmin")]
     [HttpPost]
     public IActionResult Post([FromForm] CategoryDto categoryDto)
     {
