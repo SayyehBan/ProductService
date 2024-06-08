@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using App.Metrics;
+using App.Metrics.Formatters.Prometheus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ProductService.Infrastructure.Contexts;
 using ProductService.Model.Links;
 using ProductService.Model.Services;
@@ -9,6 +12,24 @@ using SayyehBanTools.ConnectionDB;
 using SayyehBanTools.MessagingBus.RabbitMQ.Model;
 
 var builder = WebApplication.CreateBuilder(args);
+var metrics = new MetricsBuilder();
+
+
+builder.Services.AddMetricsEndpoints(options =>
+{
+    options.MetricsTextEndpointOutputFormatter = new MetricsPrometheusTextOutputFormatter();
+    options.EnvironmentInfoEndpointEnabled = false;
+});
+
+
+builder.Services.AddMetrics(metrics);
+
+builder.Services.AddMetricsTrackingMiddleware();
+
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.AllowSynchronousIO = true;
+});
 
 // Add services to the container.
 
@@ -41,14 +62,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UseMetricsAllMiddleware();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
+//if (app.Environment.IsDevelopment())
+//{
+app.UseSwagger();
+app.UseSwaggerUI();
+//}
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
