@@ -2,24 +2,24 @@
 using App.Metrics.Formatters.Prometheus;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using ProductService.HealthChecks;
 using ProductService.Infrastructure.Contexts;
 using ProductService.Model.Links;
 using ProductService.Model.Services;
 using SayyehBanTools.ConfigureService;
 using SayyehBanTools.ConnectionDB;
 using SayyehBanTools.MessagingBus.RabbitMQ.Model;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSerilog(config => { config.ReadFrom.Configuration(builder.Configuration); });
+//builder.Services.AddHostedService<Worker>();
+
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+
 var metrics = new MetricsBuilder();
-
-
 builder.Services.AddMetricsEndpoints(options =>
 {
     options.MetricsTextEndpointOutputFormatter = new MetricsPrometheusTextOutputFormatter();
@@ -83,7 +83,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 app.UseMetricsAllMiddleware();
-
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{

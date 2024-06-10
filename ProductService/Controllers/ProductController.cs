@@ -23,6 +23,10 @@ public class ProductController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
+        logger.LogInformation("Request Get Method in ProductController");      
+        logger.LogInformation("-------------------------------");
+        logger.LogWarning("Log warning");
+        logger.LogError("Error test");
         metrics.Measure.Counter.Increment(new CounterOptions
         {
             Name = "get_list_product",
