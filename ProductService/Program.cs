@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ProductService.HealthChecks;
 using ProductService.Infrastructure.Contexts;
 using ProductService.Model.Links;
 using ProductService.Model.Services;
@@ -53,6 +54,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ProductAdmin",
         policy => policy.RequireClaim("scope", "productservice.admin"));
 });
+
+builder.Services.AddHealthChecks().AddCheck<DataBaseHealthCheck>("SqlCheck");
+
 //builder.Services.AddScoped<IMessageBus, RabbitMQMessageBus>();
 //پیکربندی های پیش فرض SayyehbanTools
 var configureServices = new ConfigureServicesRabbitMQ();
@@ -76,5 +80,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHealthChecks("/health");
 app.Run();
