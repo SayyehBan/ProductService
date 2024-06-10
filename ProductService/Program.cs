@@ -1,9 +1,13 @@
 ﻿using App.Metrics;
 using App.Metrics.Formatters.Prometheus;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using ProductService.HealthChecks;
 using ProductService.Infrastructure.Contexts;
 using ProductService.Model.Links;
@@ -35,7 +39,7 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<ProductDatabaseContext>(p => p.UseSqlServer(SqlServerConnection.ConnectionString("4Mgp5catJqMnBNvqAqdJ2w==", "eWyP6NKkWfiTzk6B1pz8gw==", "m6UQxl628s/a1Hx1CxA2LQ==", "xbfQyKCUrBvw5zxn8sMOfg==", "257ld6s4dsc16e2j", "69q18j991xl48u6u")));
+builder.Services.AddDbContext<ProductDatabaseContext>(p => p.UseSqlServer(SqlServerConnection.ConnectionString("192.168.1.13", "ProductsDB", "TestConnection", "@123456")));
 builder.Services.AddTransient<ICategoryService, RCategoryService>();
 builder.Services.AddTransient<IProductService, RProductService>();
 //RabbitMQ
@@ -55,7 +59,19 @@ builder.Services.AddAuthorization(options =>
         policy => policy.RequireClaim("scope", "productservice.admin"));
 });
 
-builder.Services.AddHealthChecks().AddCheck<DataBaseHealthCheck>("SqlCheck");
+builder.Services.AddHealthChecks().
+    AddRabbitMQ(RabbitMQConnection.DefaultConnection(), tags: new string[] { "rabbitMQ" }).
+    AddSqlServer(SqlServerConnection.ConnectionString("192.168.1.13", "ProductsDB", "TestConnection", "@123456"));
+//.AddCheck<DataBaseHealthCheck>("SqlCheck");
+
+
+builder.Services.AddHealthChecksUI(p => p.AddHealthCheckEndpoint("ProductshealthCheck", "/health"))
+          .AddInMemoryStorage();
+
+
+builder.Services.AddHealthChecksUI(p => p.AddHealthCheckEndpoint("OrderhealthCheck", "health"))
+ .AddInMemoryStorage();
+
 
 //builder.Services.AddScoped<IMessageBus, RabbitMQMessageBus>();
 //پیکربندی های پیش فرض SayyehbanTools
@@ -75,10 +91,21 @@ app.UseSwagger();
 app.UseSwaggerUI();
 //}
 app.UseHttpsRedirection();
+app.UseHealthChecks("/health", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
+});
+app.UseHealthChecksUI(delegate (HealthChecks.UI.Configuration.Options options)
+{
+    options.UIPath = "/healthui";
+    options.ApiPath = "/healthuiapi";
+});
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHealthChecks("/health");
+//app.MapHealthChecks("/health");
 app.Run();
